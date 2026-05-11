@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quy Trình Đăng Ký Lịch & Giải Trình Check-in - GHN</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<style>
+:root {
+    --ghn-orange: #F26522;
+    --ghn-blue: #0065A1;
+}
+.chart-container {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    height: 350px;
+    max-height: 400px;
+}
+@media (min-width: 768px) {
+    .chart-container {
+        height: 400px;
+    }
+}
+.glass-card {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 101, 161, 0.1);
+}
+.step-btn.active {
+    background-color: var(--ghn-blue);
+    color: white;
+    border-color: var(--ghn-blue);
+    box-shadow: 0 4px 12px rgba(0, 101, 161, 0.2);
+}
+.role-tab.active {
+    background-color: var(--ghn-orange);
+    color: white;
+    border-color: var(--ghn-orange);
+}
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.pulse-orange {
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(242, 101, 34, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(242, 101, 34, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(242, 101, 34, 0); }
+}
+.text-ghn-orange { color: var(--ghn-orange); }
+.bg-ghn-orange { background-color: var(--ghn-orange); }
+.text-ghn-blue { color: var(--ghn-blue); }
+.bg-ghn-blue { background-color: var(--ghn-blue); }
+.border-ghn-orange { border-color: var(--ghn-orange); }
+.border-ghn-blue { border-color: var(--ghn-blue); }
+</style>
+<!-- Chosen Palette: GHN Brand Palette (Orange #F26522, Blue #0065A1) -->
+<!-- Application Structure Plan: [Suy luận] Chuẩn hóa thuật ngữ chuyên môn: NVXL (thay cho NV kho) và NVPTTT (thay cho NV thị trường). Cập nhật lô-gic biểu đồ hiển thị số tiền trực tiếp trên thanh. Điều chỉnh các câu lệnh kỷ luật thành "Không check in ≥ 3 ngày/tháng" theo image_a476d8.png. Tích hợp logo GHN tại thanh điều hướng trắng. -->
+<!-- Visualization & Content Choices: 
+1. Navigation -> Logo GHN.gif bên trái thanh điều hướng trắng.
+2. Step Engine -> 9 bước vận hành được tinh chỉnh ghi chú theo cột A-K (NVXL/NVPTTT) và L-N (AM/AAM).
+3. Chart -> Sử dụng datalabels plugin để ghi số 50.000 và 100.000 trực tiếp vào thanh biểu đồ.
+4. Language -> Toàn bộ là thuật ngữ chuyên môn Logistics tại GHN. -->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased pb-20 text-start">
+
+    <nav class="bg-white text-slate-800 shadow-sm sticky top-0 z-50 border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex-shrink-0 flex items-center">
+                    <img src="GHN.gif" alt="GHN Logo" class="h-12 w-auto object-contain" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Logo_Giao_H%C3%A0ng_Nhanh.png/640px-Logo_Giao_H%C3%A0ng_Nhanh.png'">
+                </div>
+                <div class="hidden md:flex space-x-8 text-sm font-bold uppercase tracking-wider">
+                    <a href="#quy-trinh" class="text-ghn-blue hover:text-ghn-orange transition-colors">Quy Trình</a>
+                    <a href="#ca-lam-viec" class="text-ghn-blue hover:text-ghn-orange transition-colors">Ca Làm Việc</a>
+                    <a href="#che-tai" class="text-ghn-blue hover:text-ghn-orange transition-colors">Chế Tài</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="bg-ghn-blue text-white py-12 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-4 leading-tight uppercase">Chuẩn Vận Hành <span class="text-ghn-orange">Check-in OE</span></h1>
+            <p class="text-lg text-blue-50 leading-relaxed max-w-3xl mx-auto mb-6">
+                Hướng dẫn đăng ký lịch và giải trình lỗi check-in dành cho AM/AAM, NVXL và NVPTTT.
+            </p>
+            <a href="https://docs.google.com/spreadsheets/d/1jZ9JhSWBOHgrqIA0MZyrS0lmhlPvXGxp7l--68ytngw/edit?usp=sharing" target="_blank" class="bg-ghn-orange hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all inline-flex items-center gap-2 pulse-orange text-sm text-center">
+                📂 MỞ FILE TỔNG (MASTER DATA)
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
+        
+        <section id="quy-trinh" class="mb-16">
+            <div class="glass-card rounded-2xl shadow-xl p-6 md:p-10 border border-slate-200">
+                <div class="mb-8 text-center border-b border-slate-100 pb-8">
+                    <h2 class="text-2xl font-bold text-ghn-blue mb-4 uppercase tracking-wide">Xác định vị trí để xem hướng dẫn đúng</h2>
+                    <div class="flex flex-wrap justify-center gap-2" id="role-selector">
+                        <button class="role-tab active px-5 py-2 rounded-full border-2 border-slate-200 font-bold hover:border-ghn-orange transition-all text-xs" data-role="all">TẤT CẢ</button>
+                        <button class="role-tab px-5 py-2 rounded-full border-2 border-slate-200 font-bold hover:border-ghn-orange transition-all text-xs" data-role="am">AM / AAM</button>
+                        <button class="role-tab px-5 py-2 rounded-full border-2 border-slate-200 font-bold hover:border-ghn-orange transition-all text-xs" data-role="nvxl">NVXL</button>
+                        <button class="role-tab px-5 py-2 rounded-full border-2 border-slate-200 font-bold hover:border-ghn-orange transition-all text-xs" data-role="nvpttt">NVPTTT</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4">
+                    <div class="lg:col-span-4 flex flex-col gap-2 max-h-[600px] overflow-y-auto pr-2" id="process-steps">
+                        <!-- Rendered by JS -->
+                    </div>
+
+                    <div class="lg:col-span-8">
+                        <div id="step-content" class="bg-orange-50/20 rounded-2xl p-6 md:p-8 h-full border border-orange-100 flex flex-col justify-start min-h-[500px]">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ca-lam-viec" class="mb-16">
+            <div class="mb-8 text-center">
+                <h2 class="text-3xl font-bold text-ghn-blue uppercase text-center w-full">Ca Làm Việc Cố Định</h2>
+                <p class="text-slate-600 mt-2 italic text-center w-full">Cần đăng ký chính xác 1 trong 4 mã ca sau tại sheet "DATA HIỆN TẠI"</p>
+            </div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-ghn-orange text-center">
+                    <div class="text-ghn-orange font-bold mb-1">Ca 12</div>
+                    <div class="text-xl font-black text-ghn-blue">07:00 - 16:00</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-ghn-orange text-center">
+                    <div class="text-ghn-orange font-bold mb-1">Ca 13</div>
+                    <div class="text-xl font-black text-ghn-blue">08:00 - 16:00</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-ghn-orange text-center">
+                    <div class="text-ghn-orange font-bold mb-1">Ca 14</div>
+                    <div class="text-xl font-black text-ghn-blue">13:00 - 22:00</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-ghn-orange text-center">
+                    <div class="text-ghn-orange font-bold mb-1">Ca 15</div>
+                    <div class="text-xl font-black text-ghn-blue">14:00 - 23:00</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="che-tai" class="mb-16">
+            <div class="glass-card rounded-2xl shadow-xl p-8 border border-slate-200">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                    <div class="lg:col-span-1">
+                        <h2 class="text-2xl font-bold text-ghn-blue mb-4 uppercase">
+                            <span class="text-ghn-orange">💰</span> Chế Tài & Kỷ Luật
+                        </h2>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-blue-50 border-l-4 border-ghn-blue rounded-r-lg text-start">
+                                <p class="text-[10px] font-bold text-ghn-blue uppercase mb-1">Nguyên tắc Phút 01</p>
+                                <p class="text-sm font-medium">07:30:00 -> 07:31:00 bắt đầu tính Trễ.</p>
+                            </div>
+                            <div class="p-4 bg-orange-50 border-l-4 border-ghn-orange rounded-r-lg text-start">
+                                <p class="text-[10px] font-bold text-ghn-orange uppercase mb-1">Lỗi Không Check-in</p>
+                                <p class="text-sm font-medium">Áp dụng cho mọi vị trí (100k/lần).</p>
+                            </div>
+                            <div class="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg text-start">
+                                <p class="text-[10px] font-bold text-red-600 uppercase mb-1">Kỷ Luật Khóa ID</p>
+                                <p class="text-sm font-medium">Không check in ≥ 3 ngày/tháng không giải trình hợp lệ.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2 bg-white p-4 rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+                        <div class="chart-container">
+                            <canvas id="sanctionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-ghn-blue text-white py-10 text-center text-xs">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <p class="mb-4 font-bold tracking-widest uppercase">Giao Hàng Nhanh - Siêu Nhanh, Giá Siêu Tốt</p>
+            <p class="text-blue-300">© 2026 Quy trình chuẩn check in ban hành bởi HRBP Regions</p>
+        </div>
+    </footer>
+
+    <script>
+        const processSteps = [
+            {
+                id: 1,
+                title: "Thiết Lập Lịch Tháng",
+                description: "Đăng ký ca làm việc tháng N trên hệ thống.",
+                actor: "GĐV / TLGDV / AM / AAM / HRBP",
+                system: "Sheet 'DATA HIỆN TẠI'",
+                deadline: "Ngày 5 của tháng N+1",
+                appliedTo: ["am"],
+                notes: ["Tuyệt đối không nhập link 'Lưu trữ'.", "Chọn 1 trong 4 ca cố định.", "Phát sinh ca thứ 5 phải có GĐV xác nhận qua HRW."],
+                icon: "📅"
+            },
+            {
+                id: 2,
+                title: "Thay Đổi Lịch Đột Xuất",
+                description: "Báo cáo khi không check-in hoặc miễn check-in.",
+                actor: "Cá nhân nhân viên",
+                system: "Harawork",
+                deadline: "Liên tục trong tháng",
+                appliedTo: ["am"],
+                notes: ["Thông báo qua HRW -> GĐV xác nhận trực tiếp."],
+                icon: "🔄"
+            },
+            {
+                id: 3,
+                title: "Theo Dõi Dữ Liệu",
+                description: "Kiểm tra dữ liệu Trễ/Vắng đổ tự động sau 1 ngày.",
+                actor: "AM / AAM / GĐV / TLGDV",
+                system: "Sheet 'Data Daily'",
+                deadline: "Hàng ngày (Daily)",
+                appliedTo: ["am"],
+                notes: ["AM xem ở Sheet 'Data Daily'.", "GĐV/TLGDV xem ở Báo cáo check-in tổng.", "Không giải trình ở sheet này, chỉ XEM."],
+                icon: "📊"
+            },
+            {
+                id: 4,
+                title: "Giải Trình Check-in (AM)",
+                description: "Bắt buộc có minh chứng hình ảnh để không bị phạt tiền.",
+                actor: "Cá nhân AM / AAM",
+                system: "Sheet 'DATA HIỆN TẠI'",
+                deadline: "Liên tục trong tháng",
+                appliedTo: ["am"],
+                notes: [
+                    "Minh chứng: Hình check-in, Hình cắt Cam, Hình hiện diện, Hình tạo phép.",
+                    "Nhập thông tin tại vùng Cột L đến N.",
+                    "Chỉ xác nhận của GĐV mà không có ảnh: Vẫn bị phạt tiền, chỉ xem xét loại khóa ID."
+                ],
+                icon: "✍️"
+            },
+            {
+                id: 5,
+                title: "Quản Lý Lịch NVXL/PTTT",
+                description: "AM thiết lập lịch làm việc cho cấp dưới hàng tuần.",
+                actor: "AM chịu trách nhiệm",
+                system: "Lastmile (nhanh.ghn.vn/lastmile)",
+                deadline: "Hàng tuần",
+                appliedTo: ["am", "nvxl", "nvpttt"],
+                notes: ["Tính chính xác phụ thuộc 100% vào lịch trên Lastmile."],
+                icon: "🧑‍💻"
+            },
+            {
+                id: 6,
+                title: "Cut-off Giải Trình (NV)",
+                description: "Thời hạn cuối để điền thông tin hoàn phạt cho NV.",
+                actor: "AM thực hiện cho NV",
+                system: "Sheet 'Miễn/Hoàn Phạt Checkin'",
+                deadline: "Trước 12:00 Ngày 01 & 16",
+                appliedTo: ["nvxl", "nvpttt"],
+                notes: [
+                    "Vị trí NVXL/NVPTTT: Nhập đầy đủ thông tin Cột A đến K.",
+                    "Nhập thiếu/sai -> KHÔNG GHI NHẬN.",
+                    "Ngày Lễ không tự động loại trừ, phải chủ động điền link xin miễn."
+                ],
+                icon: "⏳"
+            },
+            {
+                id: 7,
+                title: "Chốt Dữ Liệu Sở Cứ",
+                description: "OE trích xuất dữ liệu làm bằng chứng xử lý lương.",
+                actor: "OE / Regions",
+                system: "Master Sheet Data",
+                deadline: "Ngay sau 12:00 Ngày 01 & 16",
+                appliedTo: ["am", "nvxl", "nvpttt"],
+                notes: ["Dữ liệu trích xuất là duy nhất, không chấp nhận bổ sung sau mốc này."],
+                icon: "🔒"
+            },
+            {
+                id: 8,
+                title: "Sự Cố Kỹ Thuật",
+                description: "Xử lý khi App/Mạng lỗi không thể check-in.",
+                actor: "Nhân viên & OE Support",
+                system: "HRW / Group OE-HRBP",
+                deadline: "Ngay lúc phát sinh lỗi",
+                appliedTo: ["am", "nvxl", "nvpttt"],
+                notes: ["Bắt buộc chụp màn hình/quay clip lỗi.", "Không báo ngay sẽ tính là lỗi cá nhân."],
+                icon: "⚠️"
+            },
+            {
+                id: 9,
+                title: "Nghỉ Phép",
+                description: "Tạo và duyệt phép chính thức trên hệ thống.",
+                actor: "Cá nhân & Quản lý",
+                system: "Noibo.ghn.vn",
+                deadline: "Trước Ngày N+1",
+                appliedTo: ["am", "nvxl", "nvpttt"],
+                notes: ["Cần duyệt trước ngày nghỉ để tránh hệ thống báo vắng."],
+                icon: "🌴"
+            }
+        ];
+
+        let currentRole = "all";
+        let activeStepId = 1;
+
+        function getRoleBadge(roles) {
+            return roles.map(r => {
+                if (r === 'am') return '<span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[9px] font-bold mr-1 uppercase">AM/AAM</span>';
+                if (r === 'nvxl') return '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[9px] font-bold mr-1 uppercase">NVXL</span>';
+                if (r === 'nvpttt') return '<span class="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-[9px] font-bold mr-1 uppercase">NVPTTT</span>';
+                return '';
+            }).join('');
+        }
+
+        function renderSteps() {
+            const container = document.getElementById('process-steps');
+            container.innerHTML = '';
+            const filtered = currentRole === "all" ? processSteps : processSteps.filter(s => s.appliedTo.includes(currentRole));
+            
+            if (filtered.length > 0 && !filtered.find(s => s.id === activeStepId)) {
+                activeStepId = filtered[0].id;
+            }
+
+            filtered.forEach(step => {
+                const btn = document.createElement('button');
+                btn.className = `step-btn text-left px-4 py-3 rounded-xl border border-slate-200 transition-all font-bold flex flex-col bg-white ${step.id === activeStepId ? 'active' : ''}`;
+                btn.innerHTML = `
+                    <div class="flex justify-between items-center w-full mb-1 text-start">
+                        <span class="text-[11px] uppercase tracking-tighter">${step.id}. ${step.title}</span>
+                        <span class="text-lg">${step.icon}</span>
+                    </div>
+                    <div class="flex flex-wrap justify-start">${getRoleBadge(step.appliedTo)}</div>
+                `;
+                btn.onclick = () => { activeStepId = step.id; renderSteps(); };
+                container.appendChild(btn);
+            });
+            renderContent();
+        }
+
+        function renderContent() {
+            const step = processSteps.find(s => s.id === activeStepId);
+            const contentDiv = document.getElementById('step-content');
+            if (!step) return;
+
+            const notesHtml = step.notes.map(n => `<li class="flex gap-2 text-start"><span>✔</span><span>${n}</span></li>`).join('');
+
+            contentDiv.innerHTML = `
+                <div class="fade-in">
+                    <div class="flex flex-wrap gap-2 mb-4 justify-start">${getRoleBadge(step.appliedTo)}</div>
+                    <h3 class="text-2xl font-bold text-ghn-blue mb-2 uppercase text-start">${step.title}</h3>
+                    <p class="text-slate-600 mb-6 text-sm italic font-medium leading-relaxed text-start">${step.description}</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-start">
+                            <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1 tracking-wider">Trách nhiệm</span>
+                            <span class="font-bold text-ghn-blue text-sm">${step.actor}</span>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-start">
+                            <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1 tracking-wider">Hệ thống</span>
+                            <span class="font-bold text-ghn-blue text-sm">${step.system}</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-ghn-orange p-5 rounded-xl shadow-md border-l-8 border-orange-800 mb-6 text-white text-start">
+                        <span class="block text-[10px] font-bold uppercase mb-1 opacity-90 tracking-widest">Thời hạn (Deadline)</span>
+                        <span class="font-black text-xl">${step.deadline}</span>
+                    </div>
+
+                    <div class="bg-white/60 p-5 rounded-xl border border-orange-100 text-start">
+                        <h4 class="font-bold text-ghn-blue mb-3 text-xs uppercase tracking-widest border-b border-orange-100 pb-2">Lưu ý bắt buộc:</h4>
+                        <ul class="text-sm text-slate-700 space-y-3 font-medium text-start">
+                            ${notesHtml}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        document.querySelectorAll('.role-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentRole = tab.dataset.role;
+                renderSteps();
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSteps();
+            const ctx = document.getElementById('sanctionChart').getContext('2d');
+            
+            Chart.register(ChartDataLabels);
+
+            const rawLabels = ['AM/AAM', 'NVPTTT', 'NVXL'];
+            const processedLabels = rawLabels.map(l => {
+                if (l.length > 16) {
+                    const words = l.split(' ');
+                    const lines = []; let line = '';
+                    words.forEach(w => {
+                        if ((line + w).length > 16) { lines.push(line.trim()); line = w + ' '; }
+                        else { line += w + ' '; }
+                    });
+                    if (line.trim()) lines.push(line.trim());
+                    return lines;
+                }
+                return l;
+            });
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: processedLabels,
+                    datasets: [
+                        { 
+                            label: 'Phạt Trễ (VNĐ)', 
+                            data: [50000, 50000, 0], 
+                            backgroundColor: '#0065A1', 
+                            borderRadius: 4,
+                            datalabels: {
+                                color: '#FFFFFF',
+                                anchor: 'center',
+                                align: 'center',
+                                formatter: (val) => val > 0 ? val.toLocaleString('vi-VN') : ''
+                            }
+                        },
+                        { 
+                            label: 'Không Check-In (VNĐ)', 
+                            data: [100000, 100000, 100000], 
+                            backgroundColor: '#F26522', 
+                            borderRadius: 4,
+                            datalabels: {
+                                color: '#FFFFFF',
+                                anchor: 'center',
+                                align: 'center',
+                                formatter: (val) => val.toLocaleString('vi-VN')
+                            }
+                        }
+                    ]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: { 
+                        y: { 
+                            beginAtZero: true, 
+                            max: 120000,
+                            ticks: { callback: v => v.toLocaleString('vi-VN') } 
+                        } 
+                    },
+                    plugins: { 
+                        legend: { position: 'top', labels: { font: { weight: 'bold', size: 10 } } },
+                        datalabels: {
+                            font: { weight: 'bold', size: 10 },
+                            display: (context) => context.dataset.data[context.dataIndex] > 0
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                      return label.join(' ');
+                                    } else {
+                                      return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
