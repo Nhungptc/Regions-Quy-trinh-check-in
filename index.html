@@ -65,22 +65,20 @@
 .border-ghn-blue { border-color: var(--ghn-blue); }
 </style>
 <!-- Chosen Palette: GHN Official (Orange #F26522, Blue #0065A1) -->
-<!-- Application Structure Plan: [Suy luận] Cập nhật định dạng Header theo yêu cầu: Chữ "Khối Thị Trường" được đẩy xuống dòng thứ 2 và căn giữa để tăng tính thẩm mỹ và dễ đọc. Duy trì cấu trúc SPA hỗ trợ lọc thông tin theo 3 nhóm đối tượng chính (AM, NVXL, NVPTTT) và tích hợp logo GHN.gif tại thanh điều hướng trắng. -->
+<!-- Application Structure Plan: [Suy luận] Loại bỏ logo GHN khỏi thanh điều hướng theo yêu cầu. Header giữ nguyên tiêu đề "Chuẩn Vận Hành Check-in Khối Thị Trường" với định dạng ngắt dòng và căn giữa. SPA duy trì lô-gic lọc theo vai trò (AM/AAM, NVXL, NVPTTT) để hiển thị 9 bước vận hành chi tiết. Biểu đồ chế tài hiển thị số tiền phạt 50k/100k trực tiếp trên thanh bằng plugin Datalabels. -->
 <!-- Visualization & Content Choices: 
-1. Header -> Sử dụng thẻ <br> để ngắt dòng cụm "Khối Thị Trường" và giữ màu cam đồng nhất.
-2. Navigation -> Logo GHN.gif hiển thị sắc nét bên trái thanh điều hướng.
-3. Chart -> Chart.js + Datalabels plugin hiển thị mức phạt 50.000 và 100.000 trực tiếp trên biểu đồ. -->
+1. Navigation -> Xóa bỏ container chứa logo, chỉ giữ lại các liên kết điều hướng nhanh.
+2. Header -> Tiêu đề được định dạng căn giữa hoàn toàn bằng flex-col.
+3. Process Logic -> Phân định rõ trách nhiệm nhập liệu: NVXL/NVPTTT (Cột A-K) và AM/AAM (Cột L-N).
+4. Sanctions -> Hiển thị số tiền phạt trực tiếp trên thanh biểu đồ. -->
 <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased pb-20 text-start">
 
     <nav class="bg-white text-slate-800 shadow-sm sticky top-0 z-50 border-b border-slate-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-20 items-center">
-                <div class="flex flex-shrink-0 items-center justify-start h-full">
-                    <img src="GHN.gif" alt="GHN Logo" class="h-10 md:h-12 w-auto object-contain block" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Logo_Giao_H%C3%A0ng_Nhanh.png/640px-Logo_Giao_H%C3%A0ng_Nhanh.png'">
-                </div>
-                <div class="hidden md:flex space-x-6 lg:space-x-10 text-xs font-bold uppercase tracking-wider">
+            <div class="flex justify-center md:justify-end h-16 items-center">
+                <div class="flex space-x-6 lg:space-x-10 text-xs font-bold uppercase tracking-wider">
                     <a href="#quy-trinh" class="text-ghn-blue hover:text-ghn-orange transition-colors">Quy Trình</a>
                     <a href="#ca-lam-viec" class="text-ghn-blue hover:text-ghn-orange transition-colors">Ca Làm Việc</a>
                     <a href="#che-tai" class="text-ghn-blue hover:text-ghn-orange transition-colors">Chế Tài</a>
@@ -90,12 +88,12 @@
     </nav>
 
     <header class="bg-ghn-blue text-white py-12 px-4">
-        <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-3xl md:text-5xl font-extrabold mb-4 leading-tight uppercase">
+        <div class="max-w-4xl mx-auto text-center flex flex-col items-center">
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-4 leading-tight uppercase w-full">
                 Chuẩn Vận Hành <span class="text-ghn-orange">Check-in</span> <br>
                 <span class="text-ghn-orange">Khối Thị Trường</span>
             </h1>
-            <p class="text-lg text-blue-50 leading-relaxed max-w-3xl mx-auto mb-6">
+            <p class="text-lg text-blue-50 leading-relaxed max-w-3xl mb-6">
                 Cẩm nang tra cứu đăng ký lịch và giải trình lỗi dành cho AM/AAM, NVXL và NVPTTT.
             </p>
             <a href="https://docs.google.com/spreadsheets/d/1jZ9JhSWBOHgrqIA0MZyrS0lmhlPvXGxp7l--68ytngw/edit?usp=sharing" target="_blank" class="bg-ghn-orange hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all inline-flex items-center gap-2 pulse-orange text-sm text-center">
@@ -138,19 +136,19 @@
                 <p class="text-slate-600 mt-2 italic">Cần đăng ký chính xác 1 trong 4 mã ca sau tại sheet "DATA HIỆN TẠI"</p>
             </div>
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-ghn-orange text-center text-start">
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-ghn-orange text-start">
                     <div class="text-ghn-orange font-bold mb-1">Ca 12</div>
                     <div class="text-xl font-black text-ghn-blue">07:00 - 16:00</div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-ghn-orange text-center text-start">
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-ghn-orange text-start">
                     <div class="text-ghn-orange font-bold mb-1">Ca 13</div>
                     <div class="text-xl font-black text-ghn-blue">08:00 - 16:00</div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-ghn-orange text-center text-start">
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-ghn-orange text-start">
                     <div class="text-ghn-orange font-bold mb-1">Ca 14</div>
                     <div class="text-xl font-black text-ghn-blue">13:00 - 22:00</div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-ghn-orange text-center text-start">
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-ghn-orange text-start">
                     <div class="text-ghn-orange font-bold mb-1">Ca 15</div>
                     <div class="text-xl font-black text-ghn-blue">14:00 - 23:00</div>
                 </div>
@@ -207,7 +205,7 @@
                 system: "Sheet 'DATA HIỆN TẠI'",
                 deadline: "Ngày 5 của tháng N+1",
                 appliedTo: ["am"],
-                notes: ["Tuyệt đối không nhập link 'Lưu trữ'.", "Chọn 1 trong 4 ca cố định.", "Phát sinh ca thứ 5 phải có GĐV xác nhận qua HRW."],
+                notes: ["Tuyệt đối không nhập link 'Lưu trữ'.", "AM đăng ký 1 trong 4 ca cố định.", "Phát sinh ca thứ 5 phải có GĐV xác nhận qua HRW."],
                 icon: "📅"
             },
             {
@@ -223,7 +221,7 @@
             },
             {
                 id: 3,
-                title: "Theo Dõi Dữ Liệu",
+                title: "Theo Dõi Dữ Liệu Daily",
                 description: "Dữ liệu đổ tự động sau 1 ngày làm việc.",
                 actor: "AM / AAM / GĐV / TLGDV / HRBP",
                 system: "Sheet 'Data Daily'",
@@ -235,15 +233,15 @@
             {
                 id: 4,
                 title: "Giải Trình Check-in (AM)",
-                description: "Bắt buộc có minh chứng hình ảnh để không bị phạt tiền.",
+                description: "Bắt buộc cung cấp minh chứng hình ảnh đúng quy định.",
                 actor: "Cá nhân AM / AAM",
                 system: "Sheet 'DATA HIỆN TẠI'",
                 deadline: "Liên tục trong tháng",
                 appliedTo: ["am"],
                 notes: [
                     "Bắt buộc 1 trong 4 loại: Hình App, Hình Cam, Hình hiện diện, Hình tạo phép.",
-                    "Phải kèm link HRW đã có GĐV xác nhận.",
-                    "Nhập thông tin tại vùng Cột L đến N."
+                    "Nhập thông tin tại vùng Cột L đến N.",
+                    "Chỉ xác nhận của GĐV mà không có ảnh: Vẫn bị phạt tiền."
                 ],
                 icon: "✍️"
             },
@@ -255,7 +253,7 @@
                 system: "Lastmile (nhanh.ghn.vn/lastmile)",
                 deadline: "Hàng tuần",
                 appliedTo: ["am", "nvxl", "nvpttt"],
-                notes: ["AM chịu trách nhiệm tính chính xác để hệ thống ghi nhận đúng."],
+                notes: ["AM chịu trách nhiệm tính chính xác lịch để hệ thống ghi nhận đúng."],
                 icon: "🧑‍💻"
             },
             {
@@ -355,26 +353,26 @@
             contentDiv.innerHTML = `
                 <div class="fade-in">
                     <div class="flex flex-wrap gap-2 mb-4 justify-start">${getRoleBadge(step.appliedTo)}</div>
-                    <h3 class="text-2xl font-bold text-ghn-blue mb-2 uppercase text-start text-start">${step.title}</h3>
-                    <p class="text-slate-600 mb-6 text-sm italic font-medium leading-relaxed text-start text-start">${step.description}</p>
+                    <h3 class="text-2xl font-bold text-ghn-blue mb-2 uppercase text-start">${step.title}</h3>
+                    <p class="text-slate-600 mb-6 text-sm italic font-medium leading-relaxed text-start">${step.description}</p>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-start text-start">
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-start">
                             <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1 tracking-wider text-start">Trách nhiệm</span>
                             <span class="font-bold text-ghn-blue text-sm text-start">${step.actor}</span>
                         </div>
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-start text-start">
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-start">
                             <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1 tracking-wider text-start">Kênh/Hệ thống</span>
                             <span class="font-bold text-ghn-blue text-sm text-start">${step.system}</span>
                         </div>
                     </div>
 
-                    <div class="bg-ghn-orange p-5 rounded-xl shadow-md border-l-8 border-orange-800 mb-6 text-white text-start text-start">
+                    <div class="bg-ghn-orange p-5 rounded-xl shadow-md border-l-8 border-orange-800 mb-6 text-white text-start">
                         <span class="block text-[10px] font-bold uppercase mb-1 opacity-90 tracking-widest text-start">Thời hạn (Deadline)</span>
                         <span class="font-black text-xl text-start">${step.deadline}</span>
                     </div>
 
-                    <div class="bg-white/60 p-5 rounded-xl border border-orange-100 text-start text-start">
+                    <div class="bg-white/60 p-5 rounded-xl border border-orange-100 text-start">
                         <h4 class="font-bold text-ghn-blue mb-3 text-xs uppercase tracking-widest border-b border-orange-100 pb-2 text-start">Lưu ý bắt buộc:</h4>
                         <ul class="text-sm text-slate-700 space-y-3 font-medium text-start">
                             ${notesHtml}
